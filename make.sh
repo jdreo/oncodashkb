@@ -140,7 +140,7 @@ if [[ "$CONFIG" == *"neo4j"* ]] ; then
         pass=""
     else
         pass="--password $p"
-    if
+    fi
     ${NEO_USER} cypher-shell --username neo4j --database neo4j $pass "MATCH (p:Patient) RETURN p LIMIT 20;"
 fi
 
