@@ -799,11 +799,11 @@ if __name__ == "__main__":
     ###################################################
 
     logging.info(f"Write the final SKG into files...")
-    if nodes:
-        bc.write_nodes(f_nodes)
-    if edges:
-        bc.write_edges(f_edges)
-    #bc.summary()
+    assert nodes
+    bc.write_nodes(f_nodes)
+    assert edges
+    bc.write_edges(f_edges)
+
     import_file = bc.write_import_call()
     logging.info(f"OK, wrote files.")
 

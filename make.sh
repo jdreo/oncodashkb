@@ -95,19 +95,29 @@ cmd="uv run python3 ${py_args} $script_dir/weave.py
     --oncokb-gene-status                    $decider_snapshot_dir/treatments_oncokb_placeholder.xlsx
     --open-targets-drug-molecule            $data_dir/OT/drug_molecule/
     --open-targets-drug_mechanism_of_action $data_dir/OT/drug_mechanism_of_action/
+    --oncokb                                $decider_snapshot_dir/treatments_oncokb.csv
     ${sub_sample}
     ${weave_args}"
 echo "Weaving command:" >&2
 echo "$cmd" >&2
-    # --oncokb                                $decider_snapshot_dir/treatments_oncokb.csv
     # --open-targets-target                   $data_dir/OT/target/
     # --structural-variants-placeholder                   $decider_snapshot_dir/structural_variants_placeholder.xlsx 
 
 $cmd > last_biocypher_import.sh
 
-if [[ -z "$(cat last_biocypher_import.sh)" ]] ; then
+import="$(cat last_biocypher_import.sh)"
+if [[ -z "$import" ]] ; then
     echo "ERROR: The weave command returned nothing." >&2
-    exit 1
+    exit 100
+fi
+
+if ! grep -q "\-\-nodes" $import ; then
+    echo "ERROR: no '--nodes' in import script"
+    exit 101
+fi
+if ! grep -q "\-\-relationships" $import ; then
+    echo "ERROR: no '--relationships' in import script"
+    exit 102
 fi
 
 if [[ "$CONFIG" == *"neo4j"* ]] ; then
@@ -121,8 +131,8 @@ if [[ "$CONFIG" == *"neo4j"* ]] ; then
     $server stop
 
     echo "Run import script..." >&2
-    chmod a+x  $(cat last_biocypher_import.sh)
-    ${NEO_USER} $SHELL $(cat last_biocypher_import.sh)
+    chmod a+x  $import
+    ${NEO_USER} $SHELL $import
 
     err=$?
     if [[ $err -gt 0 ]] ; then
@@ -146,5 +156,5 @@ fi
 
 echo "Done" >&2
 
-cat last_biocypher_import.sh
+$import
 
